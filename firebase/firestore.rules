@@ -1,6 +1,15 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAuthenticatedUser() {
+      return request.auth != null;
+    }
+    function isSpecificUser(userId) {
+      return request.auth.id == userId;
+    }
+    match /traffics/{id} {
+      allow read, write: if true;
+    }
     match /{document=**} {
       allow read, write: if false;
     }
