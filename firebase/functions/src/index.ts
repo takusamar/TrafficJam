@@ -19,7 +19,7 @@ admin.initializeApp({
 const collectInformation = require("../src/trafficJam");
 export const doCollectInformation = functions
   .region("asia-northeast2")
-  .pubsub.schedule("every 5 minutes")
+  .pubsub.schedule("every 10 minutes")
   .onRun(async (context) => {
     await collectInformation();
   });

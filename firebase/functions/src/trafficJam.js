@@ -53,7 +53,8 @@ module.exports = async function collectInformation() {
     }
 
     const now = dayjs.tz();
-    const docId = now.format('YYYYMMDD_HHmmss');
+    const docId = now.format('YYYYMMDDHHmmss');
+    traffics['datetime'] = firebase.firestore.Timestamp.fromDate(now.toDate());
     await firestore.collection('traffics').doc(docId).set(traffics);
 
   })();
@@ -65,6 +66,8 @@ const getTraffic = async (src, dst) => {
 
   // デフォルト：自動車、現在時刻、最短旅行時間
   const uri = googleApiUrl + "?units=metric" +
+    "&mode=driving" +
+    "&departure_time=now" +
     "&origins=" + src.lat + "," + src.lng +
     "&destinations=" + dst.lat + "," + src.lng +
     "&key=" + API_KEY;
@@ -78,7 +81,7 @@ const getTraffic = async (src, dst) => {
       for (row of result.rows) {
         for (element of row.elements) {
           const distance = element.distance.value; // meters
-          const duration = element.duration.value; // seconds
+          const duration = element.duration_in_traffic.value; // seconds
           const kph = Math.round(distance * 36 / duration) / 10; // m/s -> km/h
           return { timestamp, src, dst, distance, duration, kph, };
         }
