@@ -30,6 +30,7 @@ const TrafficsProvider = (props: any) => {
         const item = data[key];
         return { ...item, name: key } as TTraffic;
       });
+      traffics.sort((a, b) => (a.name < b.name ? -1 : 1));
       return {
         id: doc.id,
         datetime: data.datetime,

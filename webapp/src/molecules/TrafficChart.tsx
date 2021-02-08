@@ -18,11 +18,11 @@ interface OwnProps {
 const lineColors = [
   "red",
   "orange",
-  "yellow",
   "green",
   "blue",
-  "navy",
   "purple",
+  "navy",
+  "yellow",
 ];
 
 export const TrafficChart: React.FC<OwnProps> = (props) => {
@@ -65,10 +65,11 @@ export const TrafficChart: React.FC<OwnProps> = (props) => {
         Array.from(places).map((place, idx) => (
           <Line
             key={idx}
+            dot={false}
             type="monotone"
             dataKey={place}
             stroke={lineColors[idx]}
-            fill={lineColors[idx]}
+            // fill={lineColors[idx]}
           />
         ))}
     </LineChart>
