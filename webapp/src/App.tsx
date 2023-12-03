@@ -1,13 +1,13 @@
 import React from "react";
 import "./App.css";
 import { Home } from "./pages/Home";
-import { TrafficsProvider } from "./contexts/Traffics";
+import { FirebaseProvider } from "./contexts/FirebaseProvider";
 
 function App() {
   return (
-    <TrafficsProvider>
+    <FirebaseProvider>
       <Home />
-    </TrafficsProvider>
+    </FirebaseProvider>
   );
 }
 

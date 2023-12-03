@@ -1,4 +1,4 @@
-import { Timestamp } from "../firebase";
+import { Timestamp } from "firebase/firestore";
 
 export type TLatLng = {
   lat: number;
