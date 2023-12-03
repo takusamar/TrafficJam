@@ -37,25 +37,24 @@ module.exports = async function collectInformation() {
     },
   ];
 
-  (async () => {
-    const traffics = {};
-    srcList.forEach(async (src) => {
-      const traffic = await getTraffic(src.pos, gymnasium);
-      console.log(src.name + " " +
-        traffic.src.lat + "," + traffic.src.lng + " " +
-        traffic.distance + "m " +
-        traffic.duration + "sec " +
-        traffic.kph + "km/h " +
-        traffic.timestamp
-      );
-      traffics[src.name] = traffic;
-    });
+  const promiseList = srcList.map((src) => getTraffic(src.pos, gymnasium).then((traffic) => ({ [src.name]: traffic })));
+  const trafficsArray = await Promise.all(promiseList);
+  const traffics = trafficsArray.reduce((acc, current) => {
+    const key = Object.keys(current)[0];
+    acc[key] = current[key];
+    return acc;
+  }, {});
 
-    const now = dayjs.tz();
-    const docId = now.format("YYYYMMDDHHmmss");
-    traffics["datetime"] = firebase.firestore.Timestamp.fromDate(now.toDate());
+  const now = dayjs.tz();
+  const docId = now.format("YYYYMMDDHHmmss");
+  traffics["datetime"] = firebase.firestore.Timestamp.fromDate(now.toDate());
+  try {
     await firestore.collection("traffics").doc(docId).set(traffics);
-  })();
+    console.log("docId", docId);
+  } catch (error) {
+    console.log("error", error);
+    throw error;
+  }
 };
 
 const getTraffic = async (src, dst) => {
