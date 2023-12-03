@@ -1,26 +1,26 @@
-const firebase = require('firebase-admin');
+const firebase = require("firebase-admin");
 const firestore = firebase.firestore();
 
-const axios = require('axios');
-const dayjs = require('dayjs');
-dayjs.extend(require('dayjs/plugin/timezone'));
-dayjs.extend(require('dayjs/plugin/utc'));
-dayjs.tz.setDefault('Asia/Tokyo');
+const axios = require("axios");
+const dayjs = require("dayjs");
+dayjs.extend(require("dayjs/plugin/timezone"));
+dayjs.extend(require("dayjs/plugin/utc"));
+dayjs.tz.setDefault("Asia/Tokyo");
 
-require('dotenv').config();
+require("dotenv").config();
 
 // export async function collectInformation() {
 module.exports = async function collectInformation() {
   console.log("collect information");
 
-  const gymnasium = { lat: 26.333880, lng: 127.787351 };  // 沖縄市体育館
+  const gymnasium = { lat: 26.333880, lng: 127.787351 }; // 沖縄市体育館
   const srcList = [
     {
-      name: "IC_East",  // 沖縄南IC（東）
+      name: "IC_East", // 沖縄南IC（東）
       pos: { lat: 26.336897, lng: 127.792972 },
     },
     {
-      name: "IC_West",  // 沖縄南IC（西）
+      name: "IC_West", // 沖縄南IC（西）
       pos: { lat: 26.335414, lng: 127.787199 },
     },
     {
@@ -38,11 +38,10 @@ module.exports = async function collectInformation() {
   ];
 
   (async () => {
-    let traffics = {};
-    for await (src of srcList) {
+    const traffics = {};
+    srcList.forEach(async (src) => {
       const traffic = await getTraffic(src.pos, gymnasium);
-      console.log(
-        src.name + " " +
+      console.log(src.name + " " +
         traffic.src.lat + "," + traffic.src.lng + " " +
         traffic.distance + "m " +
         traffic.duration + "sec " +
@@ -50,15 +49,14 @@ module.exports = async function collectInformation() {
         traffic.timestamp
       );
       traffics[src.name] = traffic;
-    }
+    });
 
     const now = dayjs.tz();
-    const docId = now.format('YYYYMMDDHHmmss');
-    traffics['datetime'] = firebase.firestore.Timestamp.fromDate(now.toDate());
-    await firestore.collection('traffics').doc(docId).set(traffics);
-
+    const docId = now.format("YYYYMMDDHHmmss");
+    traffics["datetime"] = firebase.firestore.Timestamp.fromDate(now.toDate());
+    await firestore.collection("traffics").doc(docId).set(traffics);
   })();
-}
+};
 
 const getTraffic = async (src, dst) => {
   const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
@@ -77,18 +75,26 @@ const getTraffic = async (src, dst) => {
     const response = await axios.get(uri);
     const result = response.data;
     // console.log(`${JSON.stringify(result, null, 2)}`)
-    if ('rows' in result) {
-      for (row of result.rows) {
-        for (element of row.elements) {
-          const distance = element.distance.value; // meters
-          const duration = element.duration_in_traffic.value; // seconds
-          const kph = Math.round(distance * 36 / duration) / 10; // m/s -> km/h
-          return { timestamp, src, dst, distance, duration, kph, };
-        }
+    if ("rows" in result && result.rows.length > 0) {
+      const row = result.rows[0];
+      if ("elements" in row && row.elements.length > 0) {
+        const element = row.elements[0];
+        const distance = element.distance.value; // meters
+        const duration = element.duration_in_traffic.value; // seconds
+        const kph = Math.round(distance * 36 / duration) / 10; // m/s -> km/h
+        return { timestamp, src, dst, distance, duration, kph };
       }
+      // for (row of result.rows) {
+      //   for (element of row.elements) {
+      //     const distance = element.distance.value; // meters
+      //     const duration = element.duration_in_traffic.value; // seconds
+      //     const kph = Math.round(distance * 36 / duration) / 10; // m/s -> km/h
+      //     return { timestamp, src, dst, distance, duration, kph };
+      //   }
+      // }
     }
   } catch (error) {
     console.log(error.response.body);
   }
   return null;
-}
+};

@@ -1,4 +1,4 @@
-import * as functions from "firebase-functions";
+const functions = require("firebase-functions");
 
 // // Start writing Firebase Functions
 // // https://firebase.google.com/docs/functions/typescript
@@ -26,15 +26,12 @@ dayjs.tz.setDefault("Asia/Tokyo");
 // });
 
 const admin = require("firebase-admin");
-const serviceAccount = require("../serviceAccountKey.json");
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+admin.initializeApp();
 
 const collectInformation = require("../src/trafficJam");
 export const doCollectInformation = functions
   .region("asia-northeast2")
-  .pubsub.schedule("every 12 minutes")
-  .onRun(async (context) => {
+  .pubsub.schedule("every 15 minutes")
+  .onRun(async (context: any) => {
     await collectInformation();
   });
